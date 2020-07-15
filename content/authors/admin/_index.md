@@ -1,14 +1,14 @@
 ---
 organizations:
   - name: BBC News
-    url: ""
+    url: "https://www.bbc.co.uk/news/help-50068132"
 superuser: true
 authors:
   - admin
 title: Lee Macaulay
 role: Audio journalist
 avatar_filename: avatar.png
-bio: ""
+bio: "I tell stories with audio on smart speakers, using data and on the internet."
 interests:
   - Audio Journalism
   - Voice and Artificial Intelligence
@@ -20,6 +20,9 @@ social:
   - icon: twitter
     icon_pack: fab
     link: https://twitter.com/lmcly
+  - icon: instagram
+    icon_pack: fab
+    link: https://instagram.com/ljmcly
   - icon: github
     icon_pack: fab
     link: https://github.com/leemacaulay
@@ -31,7 +34,7 @@ education:
     - course: BA in Journalism, Film and Media
       institution: Cardiff University
       year: 2009
-email: ""
+email: "lee@mixmul.com"
 user_groups:
   - ""
 ---
