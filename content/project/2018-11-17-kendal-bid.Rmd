@@ -1,0 +1,178 @@
+---
+title: Five more years for Kendal Business Improvement District?
+author: Lee Macaulay
+date: '2018-11-14'
+slug: kendal-bid
+cover: 
+  image: 1118-kendalbid.jpg
+  style: wide
+description: "Will South Cumbrian businesses vote (and pay) for another five years of a Business Improvement District?"
+categories: 
+  - Data
+tags: 
+  - kendal
+  - bid
+outlets:
+  - BBC Radio Cumbria
+exclude_jquery: true
+---
+
+```{r setup, include=FALSE}
+
+library(dplyr)
+library(readr)
+library(DT)
+library(ggplot2)
+library(treemapify)
+library(leaflet)
+
+workingdir <- "/Users/lmcly/Projects/ddj/kendalbid"
+
+unredacted <- read_csv(paste0(workingdir, "/" , "output_data/unredacted.csv"))
+broadvoterblocs <- read_csv(paste0(workingdir, "/" , "output_data/broadvoterblocs.csv"))
+geo <- read_csv(paste0(workingdir, "/" , "output_data/geo.csv"))
+
+```
+
+### The Final Story
+
+Here's the factfile that I put together for a story which went out on BBC Radio Cumbria in November 2018. You can hear the final piece, with [extra interviews done by BBC Radio Cumbria reporter John Bowness ](https://www.bbc.co.uk/sounds/play/p06pm6qt) [1'20"] on BBC Sounds until December 7 2018.
+
+#### Headlines
+
+- **`r unredacted %>% count()`** hereditaments (properties) are eligible to vote with a combined rateable value of **£`r prettyNum(sum(unredacted$Rateable.Value), big.mark=",", scientfic=F)`**.
+
+To [successfully renew Kendal Business Improvement District](https://www.southlakeland.gov.uk/media/6050/notice-of-ballot-proposed-renewal-of-kendal-business-improvement-district.pdf) for another five year team (_2019-2024_) there must be a majority:
+
+- of the number of the businesses voting;
+- and of the proportion of the rateable value of those voting
+
+The turnout in the first Kendal BID election was [reported as](https://www.thewestmorlandgazette.co.uk/NEWS/10770665.kendal-firms-support-business-improvement-district-initiative/) 43%. 
+
+```{r 2014bar, echo=F, fig.align="center", fig.asp=0.2, out.width="100%"}
+
+data.frame(
+  category=c("yes", "no"),
+  votes=c(215, 83)
+) %>% 
+  ggplot(aes(1, votes, fill = category)) +
+  geom_bar(stat='identity') +
+  geom_text(aes(label = paste(category, votes)), position = position_stack(vjust = 0.5), size = 6) +
+  coord_flip() +
+  theme_void() +
+  theme(aspect.ratio = 0.15) +
+  theme(legend.position = "none")
+
+```
+
+If this was repeated, a successful renewal would require:
+
+- **`r round(unredacted %>% count() / 100 * 43 / 2 + 1)`** businesses to vote in favour with;
+- at least **£`r prettyNum(((sum(unredacted$Rateable.Value) / 100 * 43) / 2) + 1, big.mark=",", scientfic=F)`** in combined rateable value.
+
+#### Map
+
+<style>
+.html-widget {
+    margin: auto;
+}
+</style>
+
+```{r map, echo=F, fig.align="centre", warning=FALSE, out.width="100%"}
+
+geo %>% 
+  filter(Property.Business.Name!="JONES GOODMAN LTD") %>%
+leaflet() %>%
+  addTiles() %>% 
+  setView(lng=-2.744351, lat=54.327230, zoom=14) %>% 
+  addCircles(~lon, ~lat, popup=paste0(geo$Property.Business.Name,": ", geo$location), weight= 1, 
+             color="black", fillOpacity = 0.8)
+
+```
+
+#### Overview
+
+```{r overview, fig.align="center", echo=F, out.width="100%"}
+
+ggplot(broadvoterblocs, aes(area = total, fill = percent_value, label = paste0(broadcategory, ": ", total))) + 
+  geom_treemap() + 
+  scale_fill_viridis_c(option = "D", guide = "legend", direction = -1, end = 0.9) +
+  geom_treemap_text(fontface = "italic", colour = "white", place = "topleft", grow = F, reflow = TRUE) +
+  labs(fill = "% of total RV")
+
+```
+
+#### Votes by Premises: Individual businesses
+
+```{r top10businessespremises, echo=F, out.width="100%"}
+
+top10businesspremises <- unredacted %>%
+  filter(Property.Business.Name!="OCCUPIER") %>% 
+  group_by(Property.Business.Name) %>% 
+  summarise(total=n()) %>%
+  mutate(percent_total=round(total/length(unredacted$Property.Business.Name)*100, digits = 2)) %>% 
+  arrange(desc(percent_total)) %>% 
+  rename("Business Name" = Property.Business.Name,
+         "Properties" = total,
+         "% of voters" = percent_total)
+
+top10businesspremises$`Business Name` <- recode(top10businesspremises$`Business Name`, 
+       "LOU KENDAL LIMITED" = "K Village",
+       "S L D C" = "South Lakeland District Council",
+       "CUMBRIA COUNTY COUNCIL CLIENT" = "Cumbria County Council",
+       "LONGLANDS LIMITED" = "Westmorland Shopping Centre",
+       "JULES B LTD" = "Jules B",
+       "ARCADIA GROUP LTD" = "Arcadia Group",
+       "H HOGARTH" = "H Hogarth",
+       "IMPACT HOUSING ASSOCIATION LTD" = "Impact Housing Association",
+       "KENDAL COLLEGE" = "Kendal College",
+       "AGE UK SOUTH LAKELAND LTD" = "Age UK South Lakeland")
+
+datatable(head(top10businesspremises, n = 10L)) %>% 
+  formatString("% of voters", suffix = "%")
+
+```
+
+
+## Votes by Rateable Value: Individual businesses
+
+```{r top10businessesvalue, echo=F, out.width="100%"}
+
+top10businessvalue <- unredacted %>%
+  filter(Property.Business.Name!="OCCUPIER") %>% 
+  group_by(Property.Business.Name) %>% 
+  summarise(total=sum(Rateable.Value)) %>%
+  mutate(percent_total=round(total/sum(unredacted$Rateable.Value)*100, digits = 2)) %>% 
+  arrange(-percent_total) %>% 
+  rename("Business Name" = Property.Business.Name,
+         "Total Rateable Value" = total,
+         "% of Total Rateable Value" = percent_total)
+
+top10businessvalue$`Business Name` <- recode(top10businessvalue$`Business Name`, 
+       "E H BOOTH & CO LTD" = "Booths",
+       "S L D C" = "South Lakeland District Council",
+       "CUMBRIA COUNTY COUNCIL CLIENT" = "Cumbria County Council",
+       "LONGLANDS LIMITED" = "Westmorland Shopping Centre",
+       "MARKS & SPENCER PLC" = "Marks & Spencer",
+       "PREMIER INN HOTELS LTD" = "Premier Inn",
+       "HHGL LIMITED" = "Homebase",
+       "POLICE AND CRIME COMMISSIONERS" = "Cumbria Constabulary",
+       "BOOTS UK LIMITED" = "Boots",
+       "T J X EUROPE LTD" = "TK Maxx")
+
+datatable(head(top10businessvalue, n = 10L)) %>% 
+  formatCurrency("Total Rateable Value", currency = "£", interval = 3, mark = ",", digits = 0) %>% 
+  formatString("% of Total Rateable Value", suffix = "%")
+
+```
+
+#### Votes by broad category
+
+```{r broadcategory, echo=F, out.width="100%"} 
+
+datatable(broadvoterblocs, 
+          colnames = c("Category", "Properties", "Total rateable value", "% of total voters", "% of rateable value")) %>% 
+  formatCurrency("rateablevalue", currency = "£", interval = 3, mark = ",", digits = 0) %>% 
+  formatRound("percent_total", digits = 2) %>% 
+  formatRound("percent_value", digits = 2)
+```
