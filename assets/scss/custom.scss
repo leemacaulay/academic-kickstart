@@ -1,3 +1,6 @@
+
+/* plyr.js */
+
 :root {
   --plyr-color-main: var(--primary);
 }
@@ -6,4 +9,27 @@
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
   border: 1px solid rgba(0, 0, 0, 0.09);
   border-radius: 3px;
+}
+
+/* reith */
+
+@font-face {
+  font-family: 'BBC Reith Sans Regular';
+  font-style: normal;
+  font-weight: 400;
+  src: local('BBC Reith Sans Regular'), url('BBCReithSans_W_Rg.woff');
+}
+
+.portrait-title > h3:nth-child(3) {
+  font-family: 'BBC Reith Sans Regular';
+  text-transform: uppercase;
+}
+
+.portrait-title > h3:nth-child(3) > a:nth-child(1) {
+  color: #bb1919;
+}
+
+.portrait-title > h3:nth-child(3) > a:nth-child(1):hover {
+  text-decoration: underline;
+  color: #bb1919;
 }
