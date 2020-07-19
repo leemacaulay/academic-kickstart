@@ -1,0 +1,10 @@
+<div class="audio-player">
+  <audio controls>
+          <source src="https://s3-eu-west-2.amazonaws.com/lmcly.netlify.com/audio/{{ .Get 0 }}" type="audio/mp3">
+          {{ if $.Page.Params.ogg }}<source src="{{ $.Page.Params.ogg }}" type="audio/ogg">{{end}}
+          Sorry, your browser does not support the <code>audio</code> element.
+  </audio>
+  <figcaption>
+    <p><i class="fas fa-headphones"></i> {{ .Get 1 | safeHTML }}</p> 
+  </figcaption>
+</div>
